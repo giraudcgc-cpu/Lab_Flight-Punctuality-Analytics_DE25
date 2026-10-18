@@ -1,69 +1,118 @@
-from pathlib import Path
+from collections.abc import Mapping
+from typing import Any
 
 import dagster as dg
-from dagster_dbt import DbtCliResource, DbtProject, dbt_assets
+from dagster_dbt import DagsterDbtTranslator, DbtCliResource, DbtProject, dbt_assets
 from dagster_dlt import DagsterDltResource, DagsterDltTranslator, dlt_assets
 
-from data_extract_load.load_pipeline import make_pipeline
-from data_extract_load.sources import swedavia_source, wikipedia_source
-
-ROOT = Path(__file__).parent.parent
+from data_extract_load.config import REPO_ROOT
+from data_extract_load.sources import make_pipeline, swedavia_source, wikipedia_source
 
 
-# ---------- dlt ----------
-class StagingTranslator(DagsterDltTranslator):
-    """Name dlt assets ["staging", <table>] so they match dbt's source keys."""
+
+def staging_key(table: str) -> dg.AssetKey:
+    return dg.AssetKey(["staging", table])
+
+
+
+class StagingDltTranslator(DagsterDltTranslator):
+    """Key dlt assets ["staging", <resource>] so they match dbt's source keys."""
 
     def get_asset_spec(self, data):
         default = super().get_asset_spec(data)
         return default.replace_attributes(
-            key=dg.AssetKey(["staging", data.resource.name]),
-            group_name="ingestion",
+            key=staging_key(data.resource.name),
+            group_name="extract_load",
         )
+
+
+dlt_resource = DagsterDltResource()
 
 
 @dlt_assets(
     dlt_source=swedavia_source(),
-    dlt_pipeline=make_pipeline("swedavia"),
+    dlt_pipeline=make_pipeline("swedavia_flights"),
     name="swedavia",
-    dagster_dlt_translator=StagingTranslator(),
+    dagster_dlt_translator=StagingDltTranslator(),
 )
-def swedavia_assets(context: dg.AssetExecutionContext, dlt: DagsterDltResource):
+def dlt_swedavia_load(context: dg.AssetExecutionContext, dlt: DagsterDltResource):
     yield from dlt.run(context=context)
 
 
 @dlt_assets(
     dlt_source=wikipedia_source(),
-    dlt_pipeline=make_pipeline("wikipedia"),
+    dlt_pipeline=make_pipeline("wikipedia_reference"),
     name="wikipedia",
-    dagster_dlt_translator=StagingTranslator(),
+    dagster_dlt_translator=StagingDltTranslator(),
 )
-def wikipedia_assets(context: dg.AssetExecutionContext, dlt: DagsterDltResource):
+def dlt_wikipedia_load(context: dg.AssetExecutionContext, dlt: DagsterDltResource):
     yield from dlt.run(context=context)
 
 
-# ---------- dbt ----------
+
+DBT_DIR = REPO_ROOT / "dbt_transformation" / "dbt_code"
+
 dbt_project = DbtProject(
-    project_dir=ROOT / "dbt_transformation" / "dbt_code",
-    profiles_dir=Path.home() / ".dbt",  # folder containing profiles.yml
+    project_dir=DBT_DIR,
+    profiles_dir=DBT_DIR,  
 )
+dbt_resource = DbtCliResource(project_dir=dbt_project)
+
 dbt_project.prepare_if_dev()
 
 
-@dbt_assets(manifest=dbt_project.manifest_path)
+class TransformationDbtTranslator(DagsterDbtTranslator):
+    def get_asset_key(self, dbt_resource_props: Mapping[str, Any]) -> dg.AssetKey:
+        # dbt sources -> same keys the dlt assets produce
+        if dbt_resource_props["resource_type"] == "source":
+            return staging_key(dbt_resource_props["name"])
+        return super().get_asset_key(dbt_resource_props)
+
+    def get_group_name(self, dbt_resource_props: Mapping[str, Any]) -> str:
+        return "transformation"
+
+
+@dbt_assets(
+    manifest=dbt_project.manifest_path,
+    dagster_dbt_translator=TransformationDbtTranslator(),
+)
 def dbt_models(context: dg.AssetExecutionContext, dbt: DbtCliResource):
+    # build = run + test, in dependency order
     yield from dbt.cli(["build"], context=context).stream()
 
 
-# ---------- job + schedule ----------
-full_pipeline = dg.define_asset_job("full_pipeline", selection=dg.AssetSelection.all())
+
+job_dlt = dg.define_asset_job(
+    "job_dlt",
+    selection=dg.AssetSelection.assets(dlt_swedavia_load, dlt_wikipedia_load),
+)
+job_dbt = dg.define_asset_job(
+    "job_dbt",
+    selection=dg.AssetSelection.assets(dbt_models),
+)
+
+schedule_dlt = dg.ScheduleDefinition(
+    job=job_dlt,
+    cron_schedule="0 6 * * *",
+    execution_timezone="Europe/Stockholm",
+    default_status=dg.DefaultScheduleStatus.RUNNING,
+)
+
+
+@dg.run_status_sensor(
+    run_status=dg.DagsterRunStatus.SUCCESS,
+    monitored_jobs=[job_dlt],
+    request_job=job_dbt,
+    default_status=dg.DefaultSensorStatus.RUNNING,
+)
+def dlt_load_sensor(context: dg.RunStatusSensorContext):
+    return dg.RunRequest(run_key=context.dagster_run.run_id)
+
 
 defs = dg.Definitions(
-    assets=[swedavia_assets, wikipedia_assets, dbt_models],
-    resources={
-        "dlt": DagsterDltResource(),
-        "dbt": DbtCliResource(project_dir=dbt_project),
-    },
-    jobs=[full_pipeline],
-    schedules=[dg.ScheduleDefinition(job=full_pipeline, cron_schedule="0 6 * * *")],
+    assets=[dlt_swedavia_load, dlt_wikipedia_load, dbt_models],
+    resources={"dlt": dlt_resource, "dbt": dbt_resource},
+    jobs=[job_dlt, job_dbt],
+    schedules=[schedule_dlt],
+    sensors=[dlt_load_sensor],
 )
