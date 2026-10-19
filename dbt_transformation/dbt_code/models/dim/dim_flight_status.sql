@@ -1,6 +1,6 @@
 -- one row per flight leg status code from the API
--- codes seen in the data: LAN = landed, ACT = departed, CAN = cancelled,
--- SCH = scheduled, SEQ = new estimated time (DEL = deleted is filtered out in src)
+-- LAN = landed, ACT = departed, CAN = cancelled,
+
 with
     statuses as (
         select status_code, status_name from {{ ref('src_arrivals') }}

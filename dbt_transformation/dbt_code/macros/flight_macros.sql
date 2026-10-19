@@ -1,6 +1,6 @@
 {# convert a UTC timestamp to Swedish local time (timestamp without time zone) #}
 {% macro to_local_time(column) %}
-    convert_timezone('UTC', '{{ var("local_timezone") }}', {{ column }}::timestamp_ntz)
+    convert_timezone('{{ var("local_timezone") }}', {{ column }}::timestamp_ntz)
 {% endmacro %}
 
 
