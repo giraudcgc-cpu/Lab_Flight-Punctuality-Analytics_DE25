@@ -1,6 +1,6 @@
 services:
   dwh_pipeline:
-    build: 
+    build:
       context: .
       dockerfile: dockerfile.dwh
     ports:
@@ -17,4 +17,8 @@ services:
       - "8501:8501"
     env_file:
       - .env
+    environment:
+      REPORTER_SNOWFLAKE_PRIVATE_KEY_PATH: /run/secrets/snowflake_key.p8
+    volumes:
+      - ${REPORTER_SNOWFLAKE_PRIVATE_KEY_PATH}:/run/secrets/snowflake_key.p8:ro
     image: crhranalytics.azurecr.io/dashboard:latest
