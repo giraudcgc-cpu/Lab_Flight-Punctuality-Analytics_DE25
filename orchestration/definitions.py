@@ -1,3 +1,4 @@
+import os
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
@@ -66,13 +67,16 @@ def dlt_wikipedia_load(context: dg.AssetExecutionContext, dlt: DagsterDltResourc
 
 DBT_DIR = REPO_ROOT / "dbt_transformation" / "dbt_code"
 
+# Docker sets DBT_PROFILES_DIR to dbt_transformation/profiles (credentials come
+# from env vars). Locally it falls back to ~/.dbt.
+DBT_PROFILES_DIR = Path(os.getenv("DBT_PROFILES_DIR", Path.home() / ".dbt"))
+
 dbt_project = DbtProject(
     project_dir=DBT_DIR,
-    profiles_dir=Path.home() / ".dbt",  # profiles.yml lives outside the repo
+    profiles_dir=DBT_PROFILES_DIR,
 )
 dbt_resource = DbtCliResource(project_dir=dbt_project)
 
-# Regenerates the dbt manifest automatically in dev
 dbt_project.prepare_if_dev()
 
 
