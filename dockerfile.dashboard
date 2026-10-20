@@ -10,4 +10,4 @@ WORKDIR /app/dashboard
 
 COPY dashboard/ /app/dashboard/
 
-CMD ["uv", "run", "streamlit", "run", "dashboard.py", "--server.port=8501", "--server.address=0.0.0.0"]
+CMD ["uv", "run", "streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]
