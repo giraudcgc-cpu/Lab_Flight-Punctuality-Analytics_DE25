@@ -1,0 +1,10 @@
+dev: 
+  type: snowfklake
+  account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
+  user: flight_dbt_user
+  password: "{{ env_var('SNOWFLAKE_USER_TRANSFORMER_PASSWORD ')  }}"
+  role: flight_dbt_role
+  database: flight_punctuality
+  warehouse: flight_dw
+  shema: warehouse
+  client_session_keep_alive: False

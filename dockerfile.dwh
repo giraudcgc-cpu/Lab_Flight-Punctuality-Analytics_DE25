@@ -1,0 +1,22 @@
+FROM python:3.13			        # base image/linux machin, we want to build on this base
+
+ENV DBT_PROFILES_DIR=/pipeline	    # setup env variable, path to profiles.toml. We create a folder called "pipeline" and inside will be the location of the profiles.toml
+
+WORKDIR /pipeline			        # folder called pipeline inside the container
+COPY pyproject.toml ./		        # we want to copy pyproject.toml
+
+RUN pip install --no-cache-dir uv   # want to create a uv virtual env following the dependencies from profiles.toml, will  pip install uv to be able to use uv in the container
+
+RUN uv sync --no-dev	            # We create the uv env
+
+
+# --- we copy the files and save them ---
+COPY data_extract_load/  ./data_extract_load/
+COPY data_transformation/  ./data_transformation/
+COPY profiles.yml  /pipeline/profiles.yml
+COPY orchestration/  ./orchestration
+
+# --- To make sure to navigate into the orchestration folder to run the commands where definitions.py is located ---
+WORKDIR /pipeline/orchestration
+
+CMD ["uv", "run", "dagster", "dev", "-f", "definitions.py", "-h", "0.0.0.0", "-p", "3000"]
