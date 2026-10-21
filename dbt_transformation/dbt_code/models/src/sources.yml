@@ -1,0 +1,32 @@
+sources:
+  - name: staging
+    
+    schema: staging
+    tables:
+      - name: arrivals
+        
+        config:
+          meta:
+            dagster:
+              asset_key: ['dlt_swedavia_source_arrivals']
+
+      - name: departures
+        
+        config:
+          meta:
+            dagster:
+              asset_key: ['dlt_swedavia_source_departures']
+
+      - name: wiki_airports
+        
+        config:
+          meta:
+            dagster:
+              asset_key: ['dlt_wikipedia_source_wiki_airports']
+
+      - name: wiki_airlines
+        
+        config:
+          meta:
+            dagster:
+              asset_key: ['dlt_wikipedia_source_wiki_airlines']

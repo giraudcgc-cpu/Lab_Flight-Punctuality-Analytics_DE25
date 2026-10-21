@@ -1,0 +1,16 @@
+# dbt profile used inside docker (and anywhere DBT_PROFILES_DIR points to this folder).
+# All values come from environment variables (.env in the repo root, passed to the
+# container with env_file)
+dbt_code:
+  target: dev
+  outputs:
+    dev:
+      type: snowflake
+      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
+      user: "{{ env_var('DBT_SNOWFLAKE_USER', 'flight_dbt_user') }}"
+      role: "{{ env_var('DBT_SNOWFLAKE_ROLE', 'flight_dbt_role') }}"
+      password: "{{ env_var('DBT_SNOWFLAKE_PASSWORD') }}"
+      database: "{{ env_var('SNOWFLAKE_DATABASE', 'flight_punctuality') }}"
+      warehouse: "{{ env_var('SNOWFLAKE_WAREHOUSE', 'flight_wh') }}"
+      schema: warehouse
+      threads: 1
