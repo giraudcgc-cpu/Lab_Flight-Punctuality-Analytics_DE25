@@ -10,8 +10,8 @@ CREATE WAREHOUSE IF NOT EXISTS flight_wh
 CREATE DATABASE IF NOT EXISTS flight_punctuality;
 
 CREATE SCHEMA IF NOT EXISTS flight_punctuality.staging;
---CREATE SCHEMA IF NOT EXISTS flight_punctuality.warehouse
---CREATE SCHEMA IF NOT EXISTS flight_punctuality.marts
+CREATE SCHEMA IF NOT EXISTS flight_punctuality.warehouse;
+CREATE SCHEMA IF NOT EXISTS flight_punctuality.marts;
 
 SHOW SCHEMAS IN DATABASE flight_punctuality;
 SHOW WAREHOUSES;
