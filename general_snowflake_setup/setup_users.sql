@@ -1,4 +1,3 @@
---- Copy of team_users.local.sql (not in git) ---
 
 USE ROLE USERADMIN;
 
