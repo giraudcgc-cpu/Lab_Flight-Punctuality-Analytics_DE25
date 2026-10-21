@@ -1,3 +1,4 @@
+import base64
 import os
 from pathlib import Path
 
@@ -10,6 +11,17 @@ load_dotenv(Path(__file__).resolve().parents[2] / ".env")
 
 
 def _connect():
+    key_b64 = os.getenv("REPORTER_SNOWFLAKE_PRIVATE_KEY_B64")
+
+    if key_b64:
+        key_path = Path("/tmp/flight_reporter_user.p8")
+        key_path.write_bytes(base64.b64decode(key_b64.strip()))
+        os.chmod(key_path, 0o600)
+        private_key_path = str(key_path)
+    else:
+        private_key_path = os.getenv(
+            "REPORTER_SNOWFLAKE_PRIVATE_KEY_PATH"
+        )
     params = dict(
         account=os.getenv("SNOWFLAKE_ACCOUNT"),
         user=os.getenv("REPORTER_SNOWFLAKE_USER", "flight_reporter_user"),
