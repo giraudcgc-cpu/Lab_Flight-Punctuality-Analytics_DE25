@@ -1,0 +1,22 @@
+FROM python:3.13
+
+#dbt reads profiles.yml from this folder (credentials come from the .env passed by docker compose)
+ENV DBT_PROFILES_DIR=/pipeline/dbt_transformation/profiles \
+    PYTHONPATH=/pipeline
+
+WORKDIR /pipeline
+COPY pyproject.toml uv.lock ./
+
+RUN pip install --no-cache-dir uv
+RUN uv sync --no-dev
+
+COPY data_extract_load/ ./data_extract_load/
+COPY dbt_transformation/ ./dbt_transformation/
+COPY orchestration/ ./orchestration/
+
+#install dbt packages (dbt_utils) inside the image instead of copying them from the host
+RUN uv run dbt deps --project-dir dbt_transformation/dbt_code
+
+WORKDIR /pipeline/orchestration
+
+CMD ["uv", "run", "dagster", "dev", "-f", "definitions.py", "-h", "0.0.0.0", "-p", "3000"]

@@ -1,0 +1,52 @@
+# Other images / non-backend files
+dashboard/
+dashboard_2/
+dockerfile.*
+docker-compose*.yaml
+**/README.md
+**/main.py
+
+# VCS / editor
+.git
+.gitignore
+.vscode
+.idea
+**/.DS_Store
+
+# Python / uv
+**/.venv
+**/__pycache__
+**/*.py[cod]
+**/.pytest_cache
+**/.ruff_cache
+**/.mypy_cache
+
+# Secrets and local config
+**/.env
+**/.env.*
+**/.dlt/secrets.toml
+**/.dlt/pipelines
+
+# dbt artifacts
+dbt_transformation/**/target
+dbt_transformation/**/dbt_packages
+
+# Dagster local state
+**/.dagster
+**/dagster_home
+**/.tmp_dagster_home_*
+
+# Logs, local data and databases
+**/logs
+**/*.log
+**/*.duckdb
+**/*.duckdb.wal
+**/*.sqlite
+**/*.db
+
+**/*.p8
+**/*.pem
+**/*.key
+
+**/.dbt
+**/.user.yml
