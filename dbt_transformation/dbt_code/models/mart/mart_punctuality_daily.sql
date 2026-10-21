@@ -1,4 +1,4 @@
--- aggregated punctuality per date, direction, Swedavia airport and airline
+-- aggregated punctuality per date, direction, Swedavia airport and airline(basically a KPI table for proof of concept)
 with mart_flights as (select * from {{ ref('mart_flight') }})
 
 select

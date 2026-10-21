@@ -8,7 +8,7 @@ with
         select status_code, status_name from {{ ref('src_departures') }}
     ),
 
-    -- the API adds the time to some statuses, e.g. 'Landed 07:55' -> 'Landed'
+    -- the API adds the time to some statuses, 
     statuses_clean as (
         select
             status_code,
