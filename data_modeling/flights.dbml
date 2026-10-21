@@ -1,0 +1,73 @@
+
+Table fct_departures {
+  departure_id varchar [pk]
+  date_key int [not null]
+  departure_airport_key varchar [not null]
+  destination_airport_key varchar 
+  airline_key varchar [not null]
+  flight_status_key varchar [not null]
+  flight_id varchar 
+  scheduled_departure_local timestamp
+  actual_departure_local timestamp
+  delay_minutes int
+  is_delayed boolean
+  is_cancelled boolean
+  is_completed boolean
+}
+
+Table fct_arrivals {
+  arrival_id varchar [pk]
+  date_key int [not null]
+  arrival_airport_key varchar [not null]
+  origin_airport_key varchar 
+  airline_key varchar [not null]
+  flight_status_key varchar [not null]
+  flight_id varchar 
+  scheduled_arrival_local timestamp
+  actual_arrival_local timestamp
+  delay_minutes int
+  is_delayed boolean
+  is_cancelled boolean
+  is_completed boolean
+}
+
+Table dim_date {
+  date_key int [pk]
+  full_date date
+  day_name varchar
+  is_weekend boolean
+}
+
+Table dim_airport {
+  airport_key varchar [pk]
+  airport_iata varchar
+  airport_name varchar
+  airport_category varchar 
+}
+
+Table dim_airline {
+  airline_key varchar [pk]
+  airline_iata varchar
+  airline_icao varchar
+  airline_name varchar
+}
+
+Table dim_flight_status {
+  flight_status_key varchar [pk]
+  status_code varchar
+  status_name varchar
+  status_category varchar 
+}
+
+Ref: fct_departures.date_key > dim_date.date_key
+Ref: fct_departures.departure_airport_key > dim_airport.airport_key
+Ref: fct_departures.destination_airport_key > dim_airport.airport_key
+Ref: fct_departures.airline_key > dim_airline.airline_key
+Ref: fct_departures.flight_status_key > dim_flight_status.flight_status_key
+
+Ref: fct_arrivals.date_key > dim_date.date_key
+Ref: fct_arrivals.arrival_airport_key > dim_airport.airport_key
+Ref: fct_arrivals.origin_airport_key > dim_airport.airport_key
+Ref: fct_arrivals.airline_key > dim_airline.airline_key
+Ref: fct_arrivals.flight_status_key > dim_flight_status.flight_status_key
+
