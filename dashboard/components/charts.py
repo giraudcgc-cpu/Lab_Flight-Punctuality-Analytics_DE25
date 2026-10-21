@@ -1,8 +1,7 @@
-# ========================================= #
-#                                           #
-#   Altair charts used by the dashboard     #
-#                                           #
-# ========================================= #
+
+                                           
+#   Altair charts used by the dashboard     
+                                           
 
 import altair as alt
 import pandas as pd
@@ -99,9 +98,9 @@ def delayed_by_hour_chart(df: pd.DataFrame) -> alt.Chart:
     )
 
 
-# ------------------------------------------------------------------ #
-#  chart cards used by the charts page                               #
-# ------------------------------------------------------------------ #
+
+#  chart cards used by the charts page                               
+
 def delayed_by_date(df: pd.DataFrame):
     with st.container(border=True):
         st.subheader("Delayed flights per date")
