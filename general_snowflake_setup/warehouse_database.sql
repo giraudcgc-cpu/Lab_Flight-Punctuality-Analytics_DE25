@@ -16,6 +16,6 @@ CREATE SCHEMA IF NOT EXISTS flight_punctuality.staging;
 CREATE SCHEMA IF NOT EXISTS flight_punctuality.warehouse;
 CREATE SCHEMA IF NOT EXISTS flight_punctuality.marts;
 
---- check ---
+--- check ----
 SHOW SCHEMAS IN DATABASE flight_punctuality;
 SHOW WAREHOUSES;
