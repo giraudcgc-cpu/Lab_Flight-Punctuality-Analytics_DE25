@@ -26,7 +26,7 @@ def _connect():
         account=os.getenv("SNOWFLAKE_ACCOUNT"),
         user=os.getenv("REPORTER_SNOWFLAKE_USER", "flight_reporter_user"),
         role=os.getenv("REPORTER_SNOWFLAKE_ROLE", "flight_reporter_role"),
-        private_key_file=os.getenv("REPORTER_SNOWFLAKE_PRIVATE_KEY_PATH"),
+        private_key_file=private_key_path,
         warehouse=os.getenv("SNOWFLAKE_WAREHOUSE", "flight_wh"),
         database=os.getenv("SNOWFLAKE_DATABASE", "flight_punctuality"),
         schema="marts",

@@ -7,7 +7,7 @@ ASSETS_PATH = Path(__file__).parents[1] / "assets"
 IMAGE_PATH = ASSETS_PATH / "image"
 MARKDOWN_PATH = ASSETS_PATH / "markdown"
 
-# Drag and drop your logo into assets/image/ with this name.
+
 LOGO_PATH = IMAGE_PATH / "gallery.png"
 
 # A flight counts as delayed when it is more than this many minutes late
