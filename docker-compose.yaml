@@ -1,0 +1,24 @@
+services:
+  dwh_pipeline:
+    build:
+      context: .
+      dockerfile: dockerfile.dwh
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    image: <azurecr login server>/dwh_pipeline:latest
+
+  dashboard:
+    build:
+      context: .
+      dockerfile: dockerfile.dashboard
+    ports:
+      - "8501:8501"
+    env_file:
+      - .env
+    environment:
+      REPORTER_SNOWFLAKE_PRIVATE_KEY_PATH: /run/secrets/snowflake_key.p8
+    volumes:
+      - ${REPORTER_SNOWFLAKE_PRIVATE_KEY_PATH}:/run/secrets/snowflake_key.p8:ro
+    image: <azurecr login server>/dashboard:latest
